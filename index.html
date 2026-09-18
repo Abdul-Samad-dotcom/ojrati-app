@@ -190,6 +190,50 @@
     grid-template-columns:1fr 1fr;
     gap:10px;
   }
+  .date-group{
+    display:grid;
+    grid-template-columns:1fr 1fr 1.3fr;
+    gap:8px;
+  }
+  .date-group input{
+    text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .date-group .dg-field span{
+    display:block;
+    font-size:10.5px;
+    color:var(--soil-600);
+    text-align:center;
+    margin-top:3px;
+  }
+  .card-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:26px;
+    height:26px;
+    border-radius:3px;
+    background:var(--sage-100);
+    font-size:14px;
+    margin-inline-end:8px;
+    flex:none;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .type-tag{
+    display:inline-block;
+    font-size:10.5px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:2px;
+    margin-inline-start:6px;
+    vertical-align:middle;
+  }
+  .type-tag.day{ background:var(--sage-100); color:var(--olive-700); }
+  .type-tag.box{ background:var(--brick-100); color:var(--brick-600); }
   .daywork-toggle{
     display:flex;
     gap:8px;
@@ -377,11 +421,28 @@
     </div>
   </details>
 
-  <div class="card" id="formCard">
-    <div class="section-title">إِضَافَةُ يَوْمِ عَمَلٍ جَدِيد</div>
+  <!-- بطاقة 1: تسجيل يوم عمل (journée) — مستقلة تمامًا -->
+  <div class="card" id="dayCard">
+    <div class="card-head">
+      <span class="card-icon">📅</span>
+      <div class="section-title" style="margin:0;">إِضَافَةُ يَوْمِ عَمَلٍ (Journée)</div>
+    </div>
     <div class="field">
-      <label>التَّارِيخ</label>
-      <input type="date" id="entryDate">
+      <label>تَارِيخُ اليَوْم</label>
+      <div class="date-group">
+        <div class="dg-field">
+          <input type="number" id="dayDate-d" inputmode="numeric" min="1" max="31" placeholder="يوم">
+          <span>اليَوْم</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="dayDate-m" inputmode="numeric" min="1" max="12" placeholder="شهر">
+          <span>الشَّهْر</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="dayDate-y" inputmode="numeric" min="2000" max="2100" placeholder="سنة">
+          <span>السَّنَة</span>
+        </div>
+      </div>
     </div>
     <div class="field">
       <label>هَلْ عَمِلْتَ فِي هَذَا اليَوْم؟</label>
@@ -390,12 +451,39 @@
         <button type="button" id="btnNotWorked" data-v="0">لَمْ أَعْمَل</button>
       </div>
     </div>
-    <div class="field">
-      <label>عَدَدُ الصَّنَادِيق (اِتْرُكْهُ 0 إِنْ لَمْ يُوجَد)</label>
-      <input type="number" id="entryBoxes" inputmode="numeric" value="0" min="0">
+    <div class="live-calc" id="liveCalcDay">أَجْرَةُ هَذَا اليَوْم: <b>0 دج</b></div>
+    <button class="btn-primary" id="addDayEntry">إِضَافَةُ اليَوْمِ إِلَى السِّجِلّ</button>
+  </div>
+
+  <!-- بطاقة 2: تسجيل الصناديق (l'attache) — مستقلة تمامًا عن بطاقة اليوم -->
+  <div class="card" id="boxCard">
+    <div class="card-head">
+      <span class="card-icon">🧺</span>
+      <div class="section-title" style="margin:0;">إِضَافَةُ صَنَادِيق (L'attache)</div>
     </div>
-    <div class="live-calc" id="liveCalc">أَجْرَةُ هَذَا اليَوْم: <b>0 دج</b></div>
-    <button class="btn-primary" id="addEntry">إِضَافَةُ اليَوْمِ إِلَى السِّجِلّ</button>
+    <div class="field">
+      <label>تَارِيخُ الصَّنَادِيق</label>
+      <div class="date-group">
+        <div class="dg-field">
+          <input type="number" id="boxDate-d" inputmode="numeric" min="1" max="31" placeholder="يوم">
+          <span>اليَوْم</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="boxDate-m" inputmode="numeric" min="1" max="12" placeholder="شهر">
+          <span>الشَّهْر</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="boxDate-y" inputmode="numeric" min="2000" max="2100" placeholder="سنة">
+          <span>السَّنَة</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>عَدَدُ الصَّنَادِيق</label>
+      <input type="number" id="entryBoxes" inputmode="numeric" value="1" min="1">
+    </div>
+    <div class="live-calc" id="liveCalcBox">أَجْرَةُ الصَّنَادِيق: <b>0 دج</b></div>
+    <button class="btn-primary" id="addBoxEntry" style="background:var(--brick-600);">إِضَافَةُ الصَّنَادِيق إِلَى السِّجِلّ</button>
   </div>
 
   <div class="section-title">السِّجِلّ</div>
@@ -444,8 +532,29 @@
     return new Intl.NumberFormat('en-US').format(Math.round(n*100)/100);
   }
 
-  function computeDayWage(worked, boxes){
-    return (worked ? settings.dayPrice : 0) + (boxes * settings.boxPrice);
+  // كل نوع له حسابه المستقل تمامًا عن الآخر
+  function computeDayWage(worked){
+    return worked ? settings.dayPrice : 0;
+  }
+  function computeBoxWage(boxes){
+    return boxes * settings.boxPrice;
+  }
+
+  // تحويل حقول يوم/شهر/سنة إلى تاريخ ISO (yyyy-mm-dd) للتخزين والفرز
+  function readDateGroup(prefix){
+    const d = parseInt(document.getElementById(prefix + '-d').value, 10);
+    const m = parseInt(document.getElementById(prefix + '-m').value, 10);
+    const y = parseInt(document.getElementById(prefix + '-y').value, 10);
+    if(!d || !m || !y) return null;
+    const dd = String(d).padStart(2,'0');
+    const mm = String(m).padStart(2,'0');
+    return y + '-' + mm + '-' + dd;
+  }
+  function setDateGroupToday(prefix){
+    const today = new Date();
+    document.getElementById(prefix + '-d').value = today.getDate();
+    document.getElementById(prefix + '-m').value = today.getMonth() + 1;
+    document.getElementById(prefix + '-y').value = today.getFullYear();
   }
 
   function renderSettingsForm(){
@@ -456,8 +565,8 @@
 
   function renderSummary(){
     const totalWage = entries.reduce((s,e)=>s + e.wage, 0);
-    const totalDays = entries.filter(e=>e.worked).length;
-    const totalBoxes = entries.reduce((s,e)=>s + (e.boxes||0), 0);
+    const totalDays = entries.filter(e=> e.type === 'day' && e.worked).length;
+    const totalBoxes = entries.reduce((s,e)=> s + (e.type === 'box' ? (e.boxes||0) : 0), 0);
     const avg = entries.length ? totalWage / entries.length : 0;
 
     document.getElementById('totalWage').innerHTML = fmt(totalWage) + '<span>دج</span>';
@@ -485,18 +594,23 @@
   function renderEntries(){
     const list = document.getElementById('entriesList');
     if(!entries.length){
-      list.innerHTML = '<div class="empty-state"><div class="big">🌾</div>لَا يُوجَدُ أَيُّ سِجِلٍّ بَعْد.<br>أَضِفْ أَوَّلَ يَوْمِ عَمَلٍ مِنَ الأَعْلَى.</div>';
+      list.innerHTML = '<div class="empty-state"><div class="big">🌾</div>لَا يُوجَدُ أَيُّ سِجِلٍّ بَعْد.<br>أَضِفْ يَوْمَ عَمَلٍ أَوْ صَنَادِيقَ مِنَ الأَعْلَى.</div>';
       return;
     }
     const sorted = [...entries].sort((a,b)=> b.date.localeCompare(a.date));
     list.innerHTML = sorted.map(e => {
-      const parts = [];
-      parts.push(e.worked ? 'يَوْمُ عَمَل' : 'لَمْ يُعْمَل');
-      if(e.boxes > 0) parts.push(e.boxes + ' صُنْدُوق');
+      let meta, tag;
+      if(e.type === 'day'){
+        meta = e.worked ? 'يَوْمُ عَمَل' : 'لَمْ يُعْمَل';
+        tag = '<span class="type-tag day">Journée</span>';
+      }else{
+        meta = e.boxes + ' صُنْدُوق';
+        tag = '<span class="type-tag box">Attache</span>';
+      }
       return '<div class="entry">' +
         '<div class="left">' +
-          '<div class="date">' + dateLabel(e.date) + '</div>' +
-          '<div class="meta">' + parts.join(' · ') + '</div>' +
+          '<div class="date">' + dateLabel(e.date) + tag + '</div>' +
+          '<div class="meta">' + meta + '</div>' +
         '</div>' +
         '<div class="entry-row">' +
           '<div class="amount">' + fmt(e.wage) + ' دج</div>' +
@@ -520,87 +634,51 @@
     renderEntries();
   }
 
-  function updateLiveCalc(){
+  function updateLiveCalcDay(){
+    const wage = computeDayWage(workedState === 1);
+    document.getElementById('liveCalcDay').innerHTML = 'أَجْرَةُ هَذَا اليَوْم: <b>' + fmt(wage) + ' دج</b>';
+  }
+  function updateLiveCalcBox(){
     const boxes = parseInt(document.getElementById('entryBoxes').value || '0', 10) || 0;
-    const wage = computeDayWage(workedState === 1, boxes);
-    document.getElementById('liveCalc').innerHTML = 'أَجْرَةُ هَذَا اليَوْم: <b>' + fmt(wage) + ' دج</b>';
+    const wage = computeBoxWage(boxes);
+    document.getElementById('liveCalcBox').innerHTML = 'أَجْرَةُ الصَّنَادِيق: <b>' + fmt(wage) + ' دج</b>';
   }
 
-  // wire up worked/not-worked toggle
+  // === بطاقة اليوم (Journée) — مستقلة تمامًا ===
   document.getElementById('btnWorked').addEventListener('click', ()=>{
     workedState = 1;
     document.getElementById('btnWorked').classList.add('active');
     document.getElementById('btnNotWorked').classList.remove('active');
-    updateLiveCalc();
+    updateLiveCalcDay();
   });
   document.getElementById('btnNotWorked').addEventListener('click', ()=>{
     workedState = 0;
     document.getElementById('btnNotWorked').classList.add('active');
     document.getElementById('btnWorked').classList.remove('active');
-    updateLiveCalc();
+    updateLiveCalcDay();
   });
-  document.getElementById('entryBoxes').addEventListener('input', updateLiveCalc);
 
-  document.getElementById('addEntry').addEventListener('click', ()=>{
-    const dateInput = document.getElementById('entryDate');
-    let dateVal = dateInput.value;
+  document.getElementById('addDayEntry').addEventListener('click', ()=>{
+    let dateVal = readDateGroup('dayDate');
     if(!dateVal){
       const today = new Date();
       dateVal = today.toISOString().slice(0,10);
     }
-    const boxes = parseInt(document.getElementById('entryBoxes').value || '0', 10) || 0;
     const worked = workedState === 1;
-    const wage = computeDayWage(worked, boxes);
+    const wage = computeDayWage(worked);
 
     entries.push({
       id: Date.now(),
+      type: 'day',
       date: dateVal,
       worked: worked,
-      boxes: boxes,
       wage: wage
     });
     saveEntries();
     renderAll();
 
-    // reset form
-    dateInput.value = '';
-    document.getElementById('entryBoxes').value = 0;
+    // reset form اليوم فقط
+    setDateGroupToday('dayDate');
     workedState = 1;
     document.getElementById('btnWorked').classList.add('active');
-    document.getElementById('btnNotWorked').classList.remove('active');
-    updateLiveCalc();
-  });
-
-  document.getElementById('saveSettings').addEventListener('click', ()=>{
-    const dp = parseFloat(document.getElementById('setDayPrice').value);
-    const bp = parseFloat(document.getElementById('setBoxPrice').value);
-    const tg = document.getElementById('setTarget').value;
-    settings.dayPrice = isNaN(dp) ? settings.dayPrice : dp;
-    settings.boxPrice = isNaN(bp) ? settings.boxPrice : bp;
-    settings.target = tg ? parseFloat(tg) : null;
-    saveSettings();
-    renderAll();
-    updateLiveCalc();
-    document.getElementById('settingsBox').removeAttribute('open');
-  });
-
-  // init
-  loadSettings();
-  loadEntries();
-  renderSettingsForm();
-  document.getElementById('entryDate').value = new Date().toISOString().slice(0,10);
-  updateLiveCalc();
-  renderAll();
-})();
-
-// تسجيل Service Worker لتشغيل التطبيق دون اتصال بالإنترنت
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch((err) => {
-      console.error('فشل تسجيل service worker:', err);
-    });
-  });
-}
-</script>
-</body>
-</html>
+    document.getElementById('btnNotWorked').cl
