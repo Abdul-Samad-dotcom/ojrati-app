@@ -1,14 +1,13 @@
 {
-  "name": "أجرتي — سجل الأجرة",
+  "name": "أجرتي - سجل الأجرة",
   "short_name": "أجرتي",
-  "description": "تطبيق لتسجيل أيام العمل والأجرة اليومية وحساب الإجمالي تلقائيًا",
+  "description": "تطبيق لتسجيل أيام العمل والأجرة اليومية وحساب الإجمالي تلقائياً",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F7F8F1",
-  "theme_color": "#241B12",
-  "dir": "rtl",
+  "background_color": "#F7F8F7",
+  "theme_color": "#241812",
   "lang": "ar",
   "icons": [
     {
