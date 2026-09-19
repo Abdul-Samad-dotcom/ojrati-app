@@ -1,5 +1,5 @@
 // service-worker.js — يسمح للتطبيق بالعمل دون اتصال بالإنترنت بعد أول زيارة
-const CACHE_NAME = 'ajrati-cache-v2';
+const CACHE_NAME = 'ajrati-cache-v3';
 const APP_SHELL = [
   './',
   './index.html',

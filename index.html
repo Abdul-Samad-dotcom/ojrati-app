@@ -541,20 +541,50 @@
   }
 
   // تحويل حقول يوم/شهر/سنة إلى تاريخ ISO (yyyy-mm-dd) للتخزين والفرز
+  // ترجع null لو التاريخ غير مكتمل أو غير صالح (مثل 31/2 أو تاريخ في المستقبل)
   function readDateGroup(prefix){
     const d = parseInt(document.getElementById(prefix + '-d').value, 10);
     const m = parseInt(document.getElementById(prefix + '-m').value, 10);
     const y = parseInt(document.getElementById(prefix + '-y').value, 10);
     if(!d || !m || !y) return null;
+    if(d < 1 || d > 31 || m < 1 || m > 12 || y < 2000 || y > 2100) return null;
+
     const dd = String(d).padStart(2,'0');
     const mm = String(m).padStart(2,'0');
-    return y + '-' + mm + '-' + dd;
+    const iso = y + '-' + mm + '-' + dd;
+
+    // تحقّق إن التاريخ موجود فعلاً في التقويم (مثلاً يرفض 31/2 لأن فبراير معندوش 31 يوم)
+    const check = new Date(iso + 'T00:00:00');
+    if(isNaN(check.getTime())) return null;
+    if(check.getFullYear() !== y || check.getMonth() + 1 !== m || check.getDate() !== d) return null;
+
+    // تحقّق إن التاريخ مش في المستقبل
+    const todayIso = new Date().toISOString().slice(0,10);
+    if(iso > todayIso) return null;
+
+    return iso;
   }
   function setDateGroupToday(prefix){
     const today = new Date();
     document.getElementById(prefix + '-d').value = today.getDate();
     document.getElementById(prefix + '-m').value = today.getMonth() + 1;
     document.getElementById(prefix + '-y').value = today.getFullYear();
+  }
+  // يمنع كتابة أرقام طويلة أو خارج النطاق المسموح في خانات التاريخ
+  function wireDateField(id, maxDigits, min, max){
+    const el = document.getElementById(id);
+    el.addEventListener('input', ()=>{
+      let v = el.value.replace(/[^0-9]/g, '').slice(0, maxDigits);
+      el.value = v;
+    });
+    el.addEventListener('blur', ()=>{
+      if(el.value === '') return;
+      let n = parseInt(el.value, 10);
+      if(isNaN(n)) { el.value = ''; return; }
+      if(n < min) n = min;
+      if(n > max) n = max;
+      el.value = n;
+    });
   }
 
   function renderSettingsForm(){
@@ -587,8 +617,13 @@
   }
 
   function dateLabel(iso){
-    const d = new Date(iso + 'T00:00:00');
-    return new Intl.DateTimeFormat('ar', { day:'numeric', month:'long', year:'numeric' }).format(d);
+    try{
+      const d = new Date(iso + 'T00:00:00');
+      if(isNaN(d.getTime())) return 'تَارِيخٌ غَيْرُ صَالِح';
+      return new Intl.DateTimeFormat('ar', { day:'numeric', month:'long', year:'numeric' }).format(d);
+    }catch(e){
+      return 'تَارِيخٌ غَيْرُ صَالِح';
+    }
   }
 
   function renderEntries(){
@@ -659,10 +694,10 @@
   });
 
   document.getElementById('addDayEntry').addEventListener('click', ()=>{
-    let dateVal = readDateGroup('dayDate');
+    const dateVal = readDateGroup('dayDate');
     if(!dateVal){
-      const today = new Date();
-      dateVal = today.toISOString().slice(0,10);
+      alert('التَّارِيخُ غَيْرُ صَحِيحٍ. تَأَكَّدْ أَنَّ اليَوْمَ وَالشَّهْرَ وَالسَّنَةَ صَحِيحُونَ، وَأَنَّ التَّارِيخَ لَيْسَ فِي المُسْتَقْبَل.');
+      return;
     }
     const worked = workedState === 1;
     const wage = computeDayWage(worked);
@@ -689,12 +724,16 @@
   document.getElementById('entryBoxes').addEventListener('input', updateLiveCalcBox);
 
   document.getElementById('addBoxEntry').addEventListener('click', ()=>{
-    let dateVal = readDateGroup('boxDate');
+    const dateVal = readDateGroup('boxDate');
     if(!dateVal){
-      const today = new Date();
-      dateVal = today.toISOString().slice(0,10);
+      alert('التَّارِيخُ غَيْرُ صَحِيحٍ. تَأَكَّدْ أَنَّ اليَوْمَ وَالشَّهْرَ وَالسَّنَةَ صَحِيحُونَ، وَأَنَّ التَّارِيخَ لَيْسَ فِي المُسْتَقْبَل.');
+      return;
     }
     const boxes = parseInt(document.getElementById('entryBoxes').value || '0', 10) || 0;
+    if(boxes < 1){
+      alert('أَدْخِلْ عَدَدَ صَنَادِيقَ أَكْبَرَ مِنَ الصِّفْر.');
+      return;
+    }
     const wage = computeBoxWage(boxes);
 
     entries.push({
@@ -731,6 +770,13 @@
   loadSettings();
   loadEntries();
   renderSettingsForm();
+  const CURRENT_YEAR = new Date().getFullYear();
+  wireDateField('dayDate-d', 2, 1, 31);
+  wireDateField('dayDate-m', 2, 1, 12);
+  wireDateField('dayDate-y', 4, 2000, CURRENT_YEAR);
+  wireDateField('boxDate-d', 2, 1, 31);
+  wireDateField('boxDate-m', 2, 1, 12);
+  wireDateField('boxDate-y', 4, 2000, CURRENT_YEAR);
   setDateGroupToday('dayDate');
   setDateGroupToday('boxDate');
   updateLiveCalcDay();
