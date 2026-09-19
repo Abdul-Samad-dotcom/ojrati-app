@@ -234,6 +234,30 @@
   }
   .type-tag.day{ background:var(--sage-100); color:var(--olive-700); }
   .type-tag.box{ background:var(--brick-100); color:var(--brick-600); }
+  .log-toolbar{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .btn-secondary{
+    flex:1;
+    padding:9px;
+    border-radius:3px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    font-family:inherit;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--soil-600);
+    cursor:pointer;
+  }
+  .entry-check{
+    width:19px;
+    height:19px;
+    margin-inline-end:10px;
+    flex:none;
+    accent-color:var(--olive-700);
+  }
   .daywork-toggle{
     display:flex;
     gap:8px;
@@ -507,7 +531,17 @@
     <button class="btn-primary" id="addBoxEntry" style="background:var(--brick-600);">إِضَافَةُ الصَّنَادِيق إِلَى السِّجِلّ</button>
   </div>
 
-  <div class="section-title">السِّجِلّ</div>
+  <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;">
+    <span>السِّجِلّ</span>
+  </div>
+  <div class="log-toolbar" id="logToolbar">
+    <button class="btn-secondary" id="btnSelectMode">تَحْدِيدٌ لِلْحَذْف</button>
+    <button class="btn-secondary" id="btnClearAll" style="color:var(--brick-600); border-color:var(--brick-100);">مَسْحُ الكُلّ</button>
+  </div>
+  <div class="log-toolbar" id="selectModeBar" style="display:none;">
+    <button class="btn-secondary" id="btnDeleteSelected" style="color:#fff; background:var(--brick-600); border-color:var(--brick-600);">حَذْفُ المُحَدَّد (<span id="selectedCount">0</span>)</button>
+    <button class="btn-secondary" id="btnCancelSelect">إِلْغَاء</button>
+  </div>
   <div class="card" id="logCard" style="padding:4px 12px;">
     <div id="entriesList"></div>
   </div>
@@ -651,6 +685,9 @@
     }
   }
 
+  let selectMode = false;
+  let selectedIds = new Set();
+
   function renderEntries(){
     const list = document.getElementById('entriesList');
     if(!entries.length){
@@ -667,14 +704,21 @@
         meta = e.boxes + ' صُنْدُوق — ' + periodLabel(e.period);
         tag = '<span class="type-tag box">Attache</span>';
       }
+      const checkboxHtml = selectMode
+        ? '<input type="checkbox" class="entry-check" data-id="' + e.id + '"' + (selectedIds.has(e.id) ? ' checked' : '') + '>'
+        : '';
+      const delBtnHtml = selectMode
+        ? ''
+        : '<button class="del" data-id="' + e.id + '" title="حَذْف">✕</button>';
       return '<div class="entry">' +
+        checkboxHtml +
         '<div class="left">' +
           '<div class="date">' + dateLabel(e.date) + tag + '</div>' +
           '<div class="meta">' + meta + '</div>' +
         '</div>' +
         '<div class="entry-row">' +
           '<div class="amount">' + fmt(e.wage) + ' دج</div>' +
-          '<button class="del" data-id="' + e.id + '" title="حَذْف">✕</button>' +
+          delBtnHtml +
         '</div>' +
       '</div>';
     }).join('');
@@ -687,7 +731,56 @@
         renderAll();
       });
     });
+
+    list.querySelectorAll('.entry-check').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        const id = parseInt(cb.getAttribute('data-id'), 10);
+        if(cb.checked){ selectedIds.add(id); } else { selectedIds.delete(id); }
+        document.getElementById('selectedCount').textContent = selectedIds.size;
+      });
+    });
   }
+
+  function updateSelectModeUI(){
+    document.getElementById('logToolbar').style.display = selectMode ? 'none' : '';
+    document.getElementById('selectModeBar').style.display = selectMode ? '' : 'none';
+    document.getElementById('selectedCount').textContent = selectedIds.size;
+  }
+
+  document.getElementById('btnSelectMode').addEventListener('click', ()=>{
+    selectMode = true;
+    selectedIds.clear();
+    updateSelectModeUI();
+    renderEntries();
+  });
+  document.getElementById('btnCancelSelect').addEventListener('click', ()=>{
+    selectMode = false;
+    selectedIds.clear();
+    updateSelectModeUI();
+    renderEntries();
+  });
+  document.getElementById('btnDeleteSelected').addEventListener('click', ()=>{
+    if(selectedIds.size === 0){
+      alert('لَمْ تُحَدِّدْ أَيَّ سِجِلٍّ لِلْحَذْف.');
+      return;
+    }
+    const ok = confirm('هَلْ أَنْتَ مُتَأَكِّدٌ مِنْ حَذْفِ ' + selectedIds.size + ' سِجِلًّا؟ لَا يُمْكِنُ التَّرَاجُعُ عَنْ هَذَا الإِجْرَاء.');
+    if(!ok) return;
+    entries = entries.filter(e => !selectedIds.has(e.id));
+    saveEntries();
+    selectMode = false;
+    selectedIds.clear();
+    updateSelectModeUI();
+    renderAll();
+  });
+  document.getElementById('btnClearAll').addEventListener('click', ()=>{
+    if(entries.length === 0) return;
+    const ok = confirm('هَلْ أَنْتَ مُتَأَكِّدٌ مِنْ مَسْحِ كُلِّ السِّجِلِّ بِالكَامِل؟ سَيُحْذَفُ كُلُّ شَيْءٍ نِهَائِيًّا وَلَا يُمْكِنُ التَّرَاجُعُ عَنْ هَذَا الإِجْرَاء.');
+    if(!ok) return;
+    entries = [];
+    saveEntries();
+    renderAll();
+  });
 
   function renderAll(){
     renderSummary();
