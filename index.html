@@ -255,6 +255,11 @@
     background:var(--olive-700);
     color:#fff;
   }
+  .daywork-toggle.three-way button{
+    font-size:11.5px;
+    padding:9px 4px;
+    line-height:1.3;
+  }
   .btn-primary{
     width:100%;
     padding:13px;
@@ -451,6 +456,14 @@
         <button type="button" id="btnNotWorked" data-v="0">لَمْ أَعْمَل</button>
       </div>
     </div>
+    <div class="field" id="dayPeriodField">
+      <label>مَتَى عَمِلْتَ؟ (يُؤَثِّرُ عَلَى الأَجْرَة)</label>
+      <div class="daywork-toggle three-way">
+        <button type="button" id="btnPeriodMorning" data-v="morning">صَبَاحًا فَقَط</button>
+        <button type="button" id="btnPeriodEvening" data-v="evening">مَسَاءً فَقَط</button>
+        <button type="button" id="btnPeriodBoth" class="active" data-v="both">صَبَاحًا وَمَسَاءً</button>
+      </div>
+    </div>
     <div class="live-calc" id="liveCalcDay">أَجْرَةُ هَذَا اليَوْم: <b>0 دج</b></div>
     <button class="btn-primary" id="addDayEntry">إِضَافَةُ اليَوْمِ إِلَى السِّجِلّ</button>
   </div>
@@ -482,6 +495,14 @@
       <label>عَدَدُ الصَّنَادِيق</label>
       <input type="number" id="entryBoxes" inputmode="numeric" value="1" min="1">
     </div>
+    <div class="field">
+      <label>مَتَى؟ (لِلتَّسْجِيلِ فَقَط، لَا يُؤَثِّرُ عَلَى الحِسَاب)</label>
+      <div class="daywork-toggle three-way">
+        <button type="button" id="btnBoxPeriodMorning" data-v="morning">صَبَاحًا فَقَط</button>
+        <button type="button" id="btnBoxPeriodEvening" data-v="evening">مَسَاءً فَقَط</button>
+        <button type="button" id="btnBoxPeriodBoth" class="active" data-v="both">صَبَاحًا وَمَسَاءً</button>
+      </div>
+    </div>
     <div class="live-calc" id="liveCalcBox">أَجْرَةُ الصَّنَادِيق: <b>0 دج</b></div>
     <button class="btn-primary" id="addBoxEntry" style="background:var(--brick-600);">إِضَافَةُ الصَّنَادِيق إِلَى السِّجِلّ</button>
   </div>
@@ -506,6 +527,8 @@
   let settings = { dayPrice: 1200, boxPrice: 240, target: null };
   let entries = [];
   let workedState = 1;
+  let dayPeriod = 'both';
+  let boxPeriod = 'both';
 
   function loadSettings(){
     try{
@@ -533,11 +556,13 @@
   }
 
   // كل نوع له حسابه المستقل تمامًا عن الآخر
-  function computeDayWage(worked){
-    return worked ? settings.dayPrice : 0;
+  // نص يوم (صباح فقط أو مساء فقط) = نص الأجرة، يوم كامل (صباحًا ومساءً) = الأجرة كاملة
+  function computeDayWage(worked, period){
+    if(!worked) return 0;
+    return period === 'both' ? settings.dayPrice : settings.dayPrice / 2;
   }
   function computeBoxWage(boxes){
-    return boxes * settings.boxPrice;
+    return boxes * settings.boxPrice; // الفترة (صباح/مساء) للتسجيل فقط، لا تؤثر على الحساب
   }
 
   // تحويل حقول يوم/شهر/سنة إلى تاريخ ISO (yyyy-mm-dd) للتخزين والفرز
@@ -636,10 +661,10 @@
     list.innerHTML = sorted.map(e => {
       let meta, tag;
       if(e.type === 'day'){
-        meta = e.worked ? 'يَوْمُ عَمَل' : 'لَمْ يُعْمَل';
+        meta = e.worked ? ('يَوْمُ عَمَل — ' + periodLabel(e.period)) : 'لَمْ يُعْمَل';
         tag = '<span class="type-tag day">Journée</span>';
       }else{
-        meta = e.boxes + ' صُنْدُوق';
+        meta = e.boxes + ' صُنْدُوق — ' + periodLabel(e.period);
         tag = '<span class="type-tag box">Attache</span>';
       }
       return '<div class="entry">' +
@@ -670,7 +695,7 @@
   }
 
   function updateLiveCalcDay(){
-    const wage = computeDayWage(workedState === 1);
+    const wage = computeDayWage(workedState === 1, dayPeriod);
     document.getElementById('liveCalcDay').innerHTML = 'أَجْرَةُ هَذَا اليَوْم: <b>' + fmt(wage) + ' دج</b>';
   }
   function updateLiveCalcBox(){
@@ -679,19 +704,44 @@
     document.getElementById('liveCalcBox').innerHTML = 'أَجْرَةُ الصَّنَادِيق: <b>' + fmt(wage) + ' دج</b>';
   }
 
+  function periodLabel(period){
+    if(period === 'morning') return 'صَبَاحًا فَقَط';
+    if(period === 'evening') return 'مَسَاءً فَقَط';
+    return 'صَبَاحًا وَمَسَاءً';
+  }
+
+  function setDayPeriodButtons(period){
+    dayPeriod = period;
+    document.getElementById('btnPeriodMorning').classList.toggle('active', period === 'morning');
+    document.getElementById('btnPeriodEvening').classList.toggle('active', period === 'evening');
+    document.getElementById('btnPeriodBoth').classList.toggle('active', period === 'both');
+    updateLiveCalcDay();
+  }
+  function setBoxPeriodButtons(period){
+    boxPeriod = period;
+    document.getElementById('btnBoxPeriodMorning').classList.toggle('active', period === 'morning');
+    document.getElementById('btnBoxPeriodEvening').classList.toggle('active', period === 'evening');
+    document.getElementById('btnBoxPeriodBoth').classList.toggle('active', period === 'both');
+  }
+
   // === بطاقة اليوم (Journée) — مستقلة تمامًا ===
   document.getElementById('btnWorked').addEventListener('click', ()=>{
     workedState = 1;
     document.getElementById('btnWorked').classList.add('active');
     document.getElementById('btnNotWorked').classList.remove('active');
+    document.getElementById('dayPeriodField').style.display = '';
     updateLiveCalcDay();
   });
   document.getElementById('btnNotWorked').addEventListener('click', ()=>{
     workedState = 0;
     document.getElementById('btnNotWorked').classList.add('active');
     document.getElementById('btnWorked').classList.remove('active');
+    document.getElementById('dayPeriodField').style.display = 'none';
     updateLiveCalcDay();
   });
+  document.getElementById('btnPeriodMorning').addEventListener('click', ()=> setDayPeriodButtons('morning'));
+  document.getElementById('btnPeriodEvening').addEventListener('click', ()=> setDayPeriodButtons('evening'));
+  document.getElementById('btnPeriodBoth').addEventListener('click', ()=> setDayPeriodButtons('both'));
 
   document.getElementById('addDayEntry').addEventListener('click', ()=>{
     const dateVal = readDateGroup('dayDate');
@@ -700,13 +750,14 @@
       return;
     }
     const worked = workedState === 1;
-    const wage = computeDayWage(worked);
+    const wage = computeDayWage(worked, dayPeriod);
 
     entries.push({
       id: Date.now(),
       type: 'day',
       date: dateVal,
       worked: worked,
+      period: worked ? dayPeriod : null,
       wage: wage
     });
     saveEntries();
@@ -717,11 +768,15 @@
     workedState = 1;
     document.getElementById('btnWorked').classList.add('active');
     document.getElementById('btnNotWorked').classList.remove('active');
-    updateLiveCalcDay();
+    document.getElementById('dayPeriodField').style.display = '';
+    setDayPeriodButtons('both');
   });
 
   // === بطاقة الصناديق (L'attache) — مستقلة تمامًا عن بطاقة اليوم ===
   document.getElementById('entryBoxes').addEventListener('input', updateLiveCalcBox);
+  document.getElementById('btnBoxPeriodMorning').addEventListener('click', ()=> setBoxPeriodButtons('morning'));
+  document.getElementById('btnBoxPeriodEvening').addEventListener('click', ()=> setBoxPeriodButtons('evening'));
+  document.getElementById('btnBoxPeriodBoth').addEventListener('click', ()=> setBoxPeriodButtons('both'));
 
   document.getElementById('addBoxEntry').addEventListener('click', ()=>{
     const dateVal = readDateGroup('boxDate');
@@ -741,6 +796,7 @@
       type: 'box',
       date: dateVal,
       boxes: boxes,
+      period: boxPeriod,
       wage: wage
     });
     saveEntries();
@@ -749,6 +805,7 @@
     // reset form الصناديق فقط
     setDateGroupToday('boxDate');
     document.getElementById('entryBoxes').value = 1;
+    setBoxPeriodButtons('both');
     updateLiveCalcBox();
   });
 
