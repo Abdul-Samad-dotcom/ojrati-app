@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أَجْرَتِي — سِجِلُّ الأَجْرَةِ</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#241B12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="أجرتي">
+<link rel="icon" href="icons/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soil-950:#241B12;
+    --soil-800:#4A3826;
+    --soil-600:#6E5738;
+    --sage-100:#EEF1E4;
+    --sage-50:#F7F8F1;
+    --olive-700:#5B6B3E;
+    --olive-500:#7C8F52;
+    --wheat-500:#C89B3C;
+    --wheat-300:#E4C77A;
+    --brick-600:#A8462F;
+    --brick-100:#F4E1DA;
+    --line:#DAD6C4;
+    --shadow: 0 2px 0 rgba(36,27,18,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--sage-50);
+    color:var(--soil-950);
+    font-family:'Tajawal', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:20px 16px 64px;
+  }
+  header.top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    padding:6px 2px 18px;
+    border-bottom:3px solid var(--soil-950);
+    margin-bottom:20px;
+  }
+  header.top h1{
+    font-size:22px;
+    font-weight:900;
+    margin:0;
+    letter-spacing:0;
+  }
+  header.top .sub{
+    font-size:12.5px;
+    color:var(--soil-600);
+    font-weight:500;
+  }
+
+  /* summary card */
+  .summary{
+    background:var(--soil-950);
+    color:var(--sage-50);
+    border-radius:4px;
+    padding:20px;
+    margin-bottom:18px;
+    position:relative;
+    overflow:hidden;
+  }
+  .summary::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 14px);
+    pointer-events:none;
+  }
+  .summary .row1{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .summary .total-label{
+    font-size:12.5px;
+    color:var(--wheat-300);
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .summary .total-value{
+    font-size:34px;
+    font-weight:900;
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .summary .total-value span{
+    font-size:16px;
+    font-weight:500;
+    color:var(--wheat-300);
+    margin-inline-start:6px;
+  }
+  .summary .stat{
+    text-align:start;
+  }
+  .summary .stat .k{
+    font-size:11px;
+    color:#B9BDA6;
+    font-weight:500;
+  }
+  .summary .stat .v{
+    font-size:16px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  .summary .stats-row{
+    display:flex;
+    gap:22px;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,0.15);
+  }
+  .status-pill{
+    margin-top:12px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:3px;
+  }
+  .status-pill.ok{ background:rgba(124,143,82,0.25); color:var(--olive-500); }
+  .status-pill.warn{ background:rgba(216,120,90,0.22); color:#E39A80; }
+  .status-pill .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; flex:none; }
+
+  /* section titles */
+  .section-title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--soil-600);
+    margin:0 0 10px;
+  }
+
+  /* form card */
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:16px;
+    margin-bottom:18px;
+  }
+  .field{
+    margin-bottom:12px;
+  }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--soil-600);
+    margin-bottom:5px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:10px 11px;
+    border:1.5px solid var(--line);
+    border-radius:3px;
+    font-family:inherit;
+    font-size:15px;
+    background:var(--sage-50);
+    color:var(--soil-950);
+  }
+  .field input:focus, .field select:focus{
+    outline:none;
+    border-color:var(--olive-700);
+    background:#fff;
+  }
+  .grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .date-group{
+    display:grid;
+    grid-template-columns:1fr 1fr 1.3fr;
+    gap:8px;
+  }
+  .date-group input{
+    text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .date-group .dg-field span{
+    display:block;
+    font-size:10.5px;
+    color:var(--soil-600);
+    text-align:center;
+    margin-top:3px;
+  }
+  .card-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:26px;
+    height:26px;
+    border-radius:3px;
+    background:var(--sage-100);
+    font-size:14px;
+    margin-inline-end:8px;
+    flex:none;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .type-tag{
+    display:inline-block;
+    font-size:10.5px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:2px;
+    margin-inline-start:6px;
+    vertical-align:middle;
+  }
+  .type-tag.day{ background:var(--sage-100); color:var(--olive-700); }
+  .type-tag.box{ background:var(--brick-100); color:var(--brick-600); }
+  .daywork-toggle{
+    display:flex;
+    gap:8px;
+  }
+  .daywork-toggle button{
+    flex:1;
+    padding:10px;
+    border-radius:3px;
+    border:1.5px solid var(--line);
+    background:var(--sage-50);
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    color:var(--soil-600);
+    cursor:pointer;
+  }
+  .daywork-toggle button.active{
+    border-color:var(--olive-700);
+    background:var(--olive-700);
+    color:#fff;
+  }
+  .btn-primary{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:3px;
+    background:var(--soil-950);
+    color:var(--sage-50);
+    font-family:inherit;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .btn-primary:active{ background:var(--soil-800); }
+  .live-calc{
+    font-size:12.5px;
+    color:var(--soil-600);
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed var(--line);
+  }
+  .live-calc b{ color:var(--soil-950); font-variant-numeric:tabular-nums; }
+
+  /* log entries */
+  .entry{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .entry:last-child{ border-bottom:none; }
+  .entry .left{ min-width:0; }
+  .entry .date{
+    font-size:14.5px;
+    font-weight:700;
+  }
+  .entry .meta{
+    font-size:12px;
+    color:var(--soil-600);
+    margin-top:2px;
+  }
+  .entry .amount{
+    font-size:15.5px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .entry .del{
+    background:none;
+    border:none;
+    color:var(--brick-600);
+    font-size:18px;
+    cursor:pointer;
+    padding:4px 6px;
+    line-height:1;
+  }
+  .entry-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .empty-state{
+    text-align:center;
+    padding:36px 16px;
+    color:var(--soil-600);
+    font-size:13.5px;
+  }
+  .empty-state .big{
+    font-size:32px;
+    margin-bottom:8px;
+  }
+
+  /* settings */
+  details.settings{
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+    margin-bottom:18px;
+  }
+  details.settings summary{
+    padding:13px 16px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--soil-600);
+    cursor:pointer;
+    list-style:none;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  details.settings summary::-webkit-details-marker{ display:none; }
+  details.settings summary::after{
+    content:"▾";
+    transition:transform .15s;
+  }
+  details.settings[open] summary::after{ transform:rotate(180deg); }
+  details.settings .settings-body{
+    padding:0 16px 16px;
+  }
+
+  footer.note{
+    font-size:11.5px;
+    color:var(--soil-600);
+    text-align:center;
+    margin-top:8px;
+    line-height:1.7;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>أَجْرَتِي</h1>
+      <div class="sub">سِجِلُّ أَيَّامِ العَمَلِ وَالأَجْرَةِ</div>
+    </div>
+  </header>
+
+  <div class="summary">
+    <div class="row1">
+      <div>
+        <div class="total-label">إِجْمَالِي الأَجْرَةِ</div>
+        <div class="total-value" id="totalWage">0<span>دج</span></div>
+      </div>
+      <div class="stat">
+        <div class="k">عَدَدُ الأَيَّامِ المُسَجَّلَة</div>
+        <div class="v" id="totalDays">0</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="k">مُتَوَسِّطُ اليَوْم</div>
+        <div class="v" id="avgDay">0 دج</div>
+      </div>
+      <div class="stat">
+        <div class="k">عَدَدُ الصَّنَادِيق</div>
+        <div class="v" id="totalBoxes">0</div>
+      </div>
+    </div>
+    <div id="statusPill"></div>
+  </div>
+
+  <details class="settings" id="settingsBox">
+    <summary>الإِعْدَادَات (أَسْعَارُ العَمَلِ وَالهَدَف)</summary>
+    <div class="settings-body">
+      <div class="grid2">
+        <div class="field">
+          <label>سِعْرُ اليَوْمِيَّة (دج)</label>
+          <input type="number" id="setDayPrice" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label>سِعْرُ الصُّنْدُوق (دج)</label>
+          <input type="number" id="setBoxPrice" inputmode="decimal">
+        </div>
+      </div>
+      <div class="field">
+        <label>الحَدُّ الأَدْنَى المُسْتَهَدَف (دج) — اختِيَارِيّ</label>
+        <input type="number" id="setTarget" inputmode="decimal" placeholder="مثال: 20000">
+      </div>
+      <button class="btn-primary" id="saveSettings" style="background:var(--olive-700);">حِفْظُ الإِعْدَادَات</button>
+    </div>
+  </details>
+
+  <!-- بطاقة 1: تسجيل يوم عمل (journée) — مستقلة تمامًا -->
+  <div class="card" id="dayCard">
+    <div class="card-head">
+      <span class="card-icon">📅</span>
+      <div class="section-title" style="margin:0;">إِضَافَةُ يَوْمِ عَمَلٍ (Journée)</div>
+    </div>
+    <div class="field">
+      <label>تَارِيخُ اليَوْم</label>
+      <div class="date-group">
+        <div class="dg-field">
+          <input type="number" id="dayDate-d" inputmode="numeric" min="1" max="31" placeholder="يوم">
+          <span>اليَوْم</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="dayDate-m" inputmode="numeric" min="1" max="12" placeholder="شهر">
+          <span>الشَّهْر</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="dayDate-y" inputmode="numeric" min="2000" max="2100" placeholder="سنة">
+          <span>السَّنَة</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>هَلْ عَمِلْتَ فِي هَذَا اليَوْم؟</label>
+      <div class="daywork-toggle">
+        <button type="button" id="btnWorked" class="active" data-v="1">نَعَمْ، عَمِلْتُ</button>
+        <button type="button" id="btnNotWorked" data-v="0">لَمْ أَعْمَل</button>
+      </div>
+    </div>
+    <div class="live-calc" id="liveCalcDay">أَجْرَةُ هَذَا اليَوْم: <b>0 دج</b></div>
+    <button class="btn-primary" id="addDayEntry">إِضَافَةُ اليَوْمِ إِلَى السِّجِلّ</button>
+  </div>
+
+  <!-- بطاقة 2: تسجيل الصناديق (l'attache) — مستقلة تمامًا عن بطاقة اليوم -->
+  <div class="card" id="boxCard">
+    <div class="card-head">
+      <span class="card-icon">🧺</span>
+      <div class="section-title" style="margin:0;">إِضَافَةُ صَنَادِيق (L'attache)</div>
+    </div>
+    <div class="field">
+      <label>تَارِيخُ الصَّنَادِيق</label>
+      <div class="date-group">
+        <div class="dg-field">
+          <input type="number" id="boxDate-d" inputmode="numeric" min="1" max="31" placeholder="يوم">
+          <span>اليَوْم</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="boxDate-m" inputmode="numeric" min="1" max="12" placeholder="شهر">
+          <span>الشَّهْر</span>
+        </div>
+        <div class="dg-field">
+          <input type="number" id="boxDate-y" inputmode="numeric" min="2000" max="2100" placeholder="سنة">
+          <span>السَّنَة</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>عَدَدُ الصَّنَادِيق</label>
+      <input type="number" id="entryBoxes" inputmode="numeric" value="1" min="1">
+    </div>
+    <div class="live-calc" id="liveCalcBox">أَجْرَةُ الصَّنَادِيق: <b>0 دج</b></div>
+    <button class="btn-primary" id="addBoxEntry" style="background:var(--brick-600);">إِضَافَةُ الصَّنَادِيق إِلَى السِّجِلّ</button>
+  </div>
+
+  <div class="section-title">السِّجِلّ</div>
+  <div class="card" id="logCard" style="padding:4px 12px;">
+    <div id="entriesList"></div>
+  </div>
+
+  <footer class="note">
+    البَيَانَاتُ مَحْفُوظَةٌ فِي هَذَا الجِهَازِ وَهَذَا المُتَصَفِّح فَقَط.<br>
+    لِلْحِفَاظِ عَلَيْهَا، تَجَنَّبْ مَسْحَ بَيَانَاتِ المُتَصَفِّح لِهَذِهِ الصَّفْحَة.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'ajrati_entries_v1';
+  const SETTINGS_KEY = 'ajrati_settings_v1';
+
+  let settings = { dayPrice: 1200, boxPrice: 240, target: null };
+  let entries = [];
+  let workedState = 1;
+
+  function loadSettings(){
+    try{
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if(raw){ settings = Object.assign(settings, JSON.parse(raw)); }
+    }catch(e){ console.error('settings load failed', e); }
+  }
+  function saveSettings(){
+    try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+    catch(e){ console.error('settings save failed', e); }
+  }
+  function loadEntries(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      entries = raw ? JSON.parse(raw) : [];
+    }catch(e){ console.error('entries load failed', e); entries = []; }
+  }
+  function saveEntries(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
+    catch(e){ console.error('entries save failed', e); }
+  }
+
+  function fmt(n){
+    return new Intl.NumberFormat('en-US').format(Math.round(n*100)/100);
+  }
+
+  // كل نوع له حسابه المستقل تمامًا عن الآخر
+  function computeDayWage(worked){
+    return worked ? settings.dayPrice : 0;
+  }
+  function computeBoxWage(boxes){
+    return boxes * settings.boxPrice;
+  }
+
+  // تحويل حقول يوم/شهر/سنة إلى تاريخ ISO (yyyy-mm-dd) للتخزين والفرز
+  // ترجع null لو التاريخ غير مكتمل أو غير صالح (مثل 31/2 أو تاريخ في المستقبل)
+  function readDateGroup(prefix){
+    const d = parseInt(document.getElementById(prefix + '-d').value, 10);
+    const m = parseInt(document.getElementById(prefix + '-m').value, 10);
+    const y = parseInt(document.getElementById(prefix + '-y').value, 10);
+    if(!d || !m || !y) return null;
+    if(d < 1 || d > 31 || m < 1 || m > 12 || y < 2000 || y > 2100) return null;
+
+    const dd = String(d).padStart(2,'0');
+    const mm = String(m).padStart(2,'0');
+    const iso = y + '-' + mm + '-' + dd;
+
+    // تحقّق إن التاريخ موجود فعلاً في التقويم (مثلاً يرفض 31/2 لأن فبراير معندوش 31 يوم)
+    const check = new Date(iso + 'T00:00:00');
+    if(isNaN(check.getTime())) return null;
+    if(check.getFullYear() !== y || check.getMonth() + 1 !== m || check.getDate() !== d) return null;
+
+    // تحقّق إن التاريخ مش في المستقبل
+    const todayIso = new Date().toISOString().slice(0,10);
+    if(iso > todayIso) return null;
+
+    return iso;
+  }
+  function setDateGroupToday(prefix){
+    const today = new Date();
+    document.getElementById(prefix + '-d').value = today.getDate();
+    document.getElementById(prefix + '-m').value = today.getMonth() + 1;
+    document.getElementById(prefix + '-y').value = today.getFullYear();
+  }
+  // يمنع كتابة أرقام طويلة أو خارج النطاق المسموح في خانات التاريخ
+  function wireDateField(id, maxDigits, min, max){
+    const el = document.getElementById(id);
+    el.addEventListener('input', ()=>{
+      let v = el.value.replace(/[^0-9]/g, '').slice(0, maxDigits);
+      el.value = v;
+    });
+    el.addEventListener('blur', ()=>{
+      if(el.value === '') return;
+      let n = parseInt(el.value, 10);
+      if(isNaN(n)) { el.value = ''; return; }
+      if(n < min) n = min;
+      if(n > max) n = max;
+      el.value = n;
+    });
+  }
+
+  function renderSettingsForm(){
+    document.getElementById('setDayPrice').value = settings.dayPrice;
+    document.getElementById('setBoxPrice').value = settings.boxPrice;
+    document.getElementById('setTarget').value = settings.target ?? '';
+  }
+
+  function renderSummary(){
+    const totalWage = entries.reduce((s,e)=>s + e.wage, 0);
+    const totalDays = entries.filter(e=> e.type === 'day' && e.worked).length;
+    const totalBoxes = entries.reduce((s,e)=> s + (e.type === 'box' ? (e.boxes||0) : 0), 0);
+    const avg = entries.length ? totalWage / entries.length : 0;
+
+    document.getElementById('totalWage').innerHTML = fmt(totalWage) + '<span>دج</span>';
+    document.getElementById('totalDays').textContent = totalDays;
+    document.getElementById('avgDay').textContent = fmt(avg) + ' دج';
+    document.getElementById('totalBoxes').textContent = totalBoxes;
+
+    const pillEl = document.getElementById('statusPill');
+    if(settings.target && settings.target > 0){
+      if(totalWage < settings.target){
+        pillEl.innerHTML = '<span class="status-pill warn"><span class="dot"></span>لَمْ تَصِلْ بَعْدُ إِلَى الهَدَفِ (' + fmt(settings.target) + ' دج)</span>';
+      }else{
+        pillEl.innerHTML = '<span class="status-pill ok"><span class="dot"></span>لَقَدْ وَصَلْتَ إِلَى الهَدَفِ المُحَدَّد</span>';
+      }
+    }else{
+      pillEl.innerHTML = '';
+    }
+  }
+
+  function dateLabel(iso){
+    try{
+      const d = new Date(iso + 'T00:00:00');
+      if(isNaN(d.getTime())) return 'تَارِيخٌ غَيْرُ صَالِح';
+      return new Intl.DateTimeFormat('ar', { day:'numeric', month:'long', year:'numeric' }).format(d);
+    }catch(e){
+      return 'تَارِيخٌ غَيْرُ صَالِح';
+    }
+  }
+
+  function renderEntries(){
+    const list = document.getElementById('entriesList');
+    if(!entries.length){
+      list.innerHTML = '<div class="empty-state"><div class="big">🌾</div>لَا يُوجَدُ أَيُّ سِجِلٍّ بَعْد.<br>أَضِفْ يَوْمَ عَمَلٍ أَوْ صَنَادِيقَ مِنَ الأَعْلَى.</div>';
+      return;
+    }
+    const sorted = [...entries].sort((a,b)=> b.date.localeCompare(a.date));
+    list.innerHTML = sorted.map(e => {
+      let meta, tag;
+      if(e.type === 'day'){
+        meta = e.worked ? 'يَوْمُ عَمَل' : 'لَمْ يُعْمَل';
+        tag = '<span class="type-tag day">Journée</span>';
+      }else{
+        meta = e.boxes + ' صُنْدُوق';
+        tag = '<span class="type-tag box">Attache</span>';
+      }
+      return '<div class="entry">' +
+        '<div class="left">' +
+          '<div class="date">' + dateLabel(e.date) + tag + '</div>' +
+          '<div class="meta">' + meta + '</div>' +
+        '</div>' +
+        '<div class="entry-row">' +
+          '<div class="amount">' + fmt(e.wage) + ' دج</div>' +
+          '<button class="del" data-id="' + e.id + '" title="حَذْف">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    list.querySelectorAll('.del').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-id');
+        entries = entries.filter(e => String(e.id) !== id);
+        saveEntries();
+        renderAll();
+      });
+    });
+  }
+
+  function renderAll(){
+    renderSummary();
+    renderEntries();
+  }
+
+  function updateLiveCalcDay(){
+    const wage = computeDayWage(workedState === 1);
+    document.getElementById('liveCalcDay').innerHTML = 'أَجْرَةُ هَذَا اليَوْم: <b>' + fmt(wage) + ' دج</b>';
+  }
+  function updateLiveCalcBox(){
+    const boxes = parseInt(document.getElementById('entryBoxes').value || '0', 10) || 0;
+    const wage = computeBoxWage(boxes);
+    document.getElementById('liveCalcBox').innerHTML = 'أَجْرَةُ الصَّنَادِيق: <b>' + fmt(wage) + ' دج</b>';
+  }
+
+  // === بطاقة اليوم (Journée) — مستقلة تمامًا ===
+  document.getElementById('btnWorked').addEventListener('click', ()=>{
+    workedState = 1;
+    document.getElementById('btnWorked').classList.add('active');
+    document.getElementById('btnNotWorked').classList.remove('active');
+    updateLiveCalcDay();
+  });
+  document.getElementById('btnNotWorked').addEventListener('click', ()=>{
+    workedState = 0;
+    document.getElementById('btnNotWorked').classList.add('active');
+    document.getElementById('btnWorked').classList.remove('active');
+    updateLiveCalcDay();
+  });
+
+  document.getElementById('addDayEntry').addEventListener('click', ()=>{
+    const dateVal = readDateGroup('dayDate');
+    if(!dateVal){
+      alert('التَّارِيخُ غَيْرُ صَحِيحٍ. تَأَكَّدْ أَنَّ اليَوْمَ وَالشَّهْرَ وَالسَّنَةَ صَحِيحُونَ، وَأَنَّ التَّارِيخَ لَيْسَ فِي المُسْتَقْبَل.');
+      return;
+    }
+    const worked = workedState === 1;
+    const wage = computeDayWage(worked);
+
+    entries.push({
+      id: Date.now(),
+      type: 'day',
+      date: dateVal,
+      worked: worked,
+      wage: wage
+    });
+    saveEntries();
+    renderAll();
+
+    // reset form اليوم فقط
+    setDateGroupToday('dayDate');
+    workedState = 1;
+    document.getElementById('btnWorked').classList.add('active');
+    document.getElementById('btnNotWorked').classList.remove('active');
+    updateLiveCalcDay();
+  });
+
+  // === بطاقة الصناديق (L'attache) — مستقلة تمامًا عن بطاقة اليوم ===
+  document.getElementById('entryBoxes').addEventListener('input', updateLiveCalcBox);
+
+  document.getElementById('addBoxEntry').addEventListener('click', ()=>{
+    const dateVal = readDateGroup('boxDate');
+    if(!dateVal){
+      alert('التَّارِيخُ غَيْرُ صَحِيحٍ. تَأَكَّدْ أَنَّ اليَوْمَ وَالشَّهْرَ وَالسَّنَةَ صَحِيحُونَ، وَأَنَّ التَّارِيخَ لَيْسَ فِي المُسْتَقْبَل.');
+      return;
+    }
+    const boxes = parseInt(document.getElementById('entryBoxes').value || '0', 10) || 0;
+    if(boxes < 1){
+      alert('أَدْخِلْ عَدَدَ صَنَادِيقَ أَكْبَرَ مِنَ الصِّفْر.');
+      return;
+    }
+    const wage = computeBoxWage(boxes);
+
+    entries.push({
+      id: Date.now() + 1, // تفادي تطابق المعرّف لو أُضيف في نفس اللحظة
+      type: 'box',
+      date: dateVal,
+      boxes: boxes,
+      wage: wage
+    });
+    saveEntries();
+    renderAll();
+
+    // reset form الصناديق فقط
+    setDateGroupToday('boxDate');
+    document.getElementById('entryBoxes').value = 1;
+    updateLiveCalcBox();
+  });
+
+  document.getElementById('saveSettings').addEventListener('click', ()=>{
+    const dp = parseFloat(document.getElementById('setDayPrice').value);
+    const bp = parseFloat(document.getElementById('setBoxPrice').value);
+    const tg = document.getElementById('setTarget').value;
+    settings.dayPrice = isNaN(dp) ? settings.dayPrice : dp;
+    settings.boxPrice = isNaN(bp) ? settings.boxPrice : bp;
+    settings.target = tg ? parseFloat(tg) : null;
+    saveSettings();
+    renderAll();
+    updateLiveCalcDay();
+    updateLiveCalcBox();
+    document.getElementById('settingsBox').removeAttribute('open');
+  });
+
+  // init
+  loadSettings();
+  loadEntries();
+  renderSettingsForm();
+  const CURRENT_YEAR = new Date().getFullYear();
+  wireDateField('dayDate-d', 2, 1, 31);
+  wireDateField('dayDate-m', 2, 1, 12);
+  wireDateField('dayDate-y', 4, 2000, CURRENT_YEAR);
+  wireDateField('boxDate-d', 2, 1, 31);
+  wireDateField('boxDate-m', 2, 1, 12);
+  wireDateField('boxDate-y', 4, 2000, CURRENT_YEAR);
+  setDateGroupToday('dayDate');
+  setDateGroupToday('boxDate');
+  updateLiveCalcDay();
+  updateLiveCalcBox();
+  renderAll();
+})();
+
+// تسجيل Service Worker لتشغيل التطبيق دون اتصال بالإنترنت
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch((err) => {
+      console.error('فشل تسجيل service worker:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
