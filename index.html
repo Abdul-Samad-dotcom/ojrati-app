@@ -681,4 +681,71 @@
     setDateGroupToday('dayDate');
     workedState = 1;
     document.getElementById('btnWorked').classList.add('active');
-    document.getElementById('btnNotWorked').cl
+    document.getElementById('btnNotWorked').classList.remove('active');
+    updateLiveCalcDay();
+  });
+
+  // === بطاقة الصناديق (L'attache) — مستقلة تمامًا عن بطاقة اليوم ===
+  document.getElementById('entryBoxes').addEventListener('input', updateLiveCalcBox);
+
+  document.getElementById('addBoxEntry').addEventListener('click', ()=>{
+    let dateVal = readDateGroup('boxDate');
+    if(!dateVal){
+      const today = new Date();
+      dateVal = today.toISOString().slice(0,10);
+    }
+    const boxes = parseInt(document.getElementById('entryBoxes').value || '0', 10) || 0;
+    const wage = computeBoxWage(boxes);
+
+    entries.push({
+      id: Date.now() + 1, // تفادي تطابق المعرّف لو أُضيف في نفس اللحظة
+      type: 'box',
+      date: dateVal,
+      boxes: boxes,
+      wage: wage
+    });
+    saveEntries();
+    renderAll();
+
+    // reset form الصناديق فقط
+    setDateGroupToday('boxDate');
+    document.getElementById('entryBoxes').value = 1;
+    updateLiveCalcBox();
+  });
+
+  document.getElementById('saveSettings').addEventListener('click', ()=>{
+    const dp = parseFloat(document.getElementById('setDayPrice').value);
+    const bp = parseFloat(document.getElementById('setBoxPrice').value);
+    const tg = document.getElementById('setTarget').value;
+    settings.dayPrice = isNaN(dp) ? settings.dayPrice : dp;
+    settings.boxPrice = isNaN(bp) ? settings.boxPrice : bp;
+    settings.target = tg ? parseFloat(tg) : null;
+    saveSettings();
+    renderAll();
+    updateLiveCalcDay();
+    updateLiveCalcBox();
+    document.getElementById('settingsBox').removeAttribute('open');
+  });
+
+  // init
+  loadSettings();
+  loadEntries();
+  renderSettingsForm();
+  setDateGroupToday('dayDate');
+  setDateGroupToday('boxDate');
+  updateLiveCalcDay();
+  updateLiveCalcBox();
+  renderAll();
+})();
+
+// تسجيل Service Worker لتشغيل التطبيق دون اتصال بالإنترنت
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch((err) => {
+      console.error('فشل تسجيل service worker:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
