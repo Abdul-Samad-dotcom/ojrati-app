@@ -648,10 +648,26 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="deleteAccountModal">
+  <div class="modal-box">
+    <div class="warn-title">⚠️ حَذْفُ الحِسَابِ نِهَائِيًّا ⚠️</div>
+    <div class="warn-body">
+      سَيَتِمُّ حَذْفُ حِسَابِكَ وَجَمِيعِ بَيَانَاتِكَ المَحْفُوظَةِ عَلَى السَّحَابَةِ نِهَائِيًّا.<br><br>
+      لَا يُمْكِنُ التَّرَاجُعُ عَنْ هَذَا الإِجْرَاء.
+    </div>
+    <div class="auth-error" id="deleteAccountError"></div>
+    <button class="btn-primary" id="btnConfirmDeleteAccount" style="background:var(--brick-600);">نَعَمْ، احْذِفْ حِسَابِي نِهَائِيًّا</button>
+    <button class="auth-guest-btn" id="btnCancelDeleteAccount" style="margin-top:10px; border-style:solid;">إِلْغَاء</button>
+  </div>
+</div>
+
 <div id="appMain" class="wrap" style="display:none;">
   <div class="user-bar" id="userBar" style="display:none;">
     <span>مُسَجَّلٌ بِاسْم: <b id="userBarEmail"></b></span>
-    <button id="btnLogout">تَسْجِيلُ خُرُوج</button>
+    <span>
+      <button id="btnLogout">تَسْجِيلُ خُرُوج</button>
+      <button id="btnDeleteAccountLink" style="color:var(--soil-600);">حَذْفُ الحِسَاب</button>
+    </span>
   </div>
 
 
@@ -691,13 +707,17 @@
     <div class="settings-body">
       <div class="grid2">
         <div class="field">
-          <label>سِعْرُ اليَوْمِيَّة (دج)</label>
-          <input type="number" id="setDayPrice" inputmode="decimal">
+          <label>سِعْرُ يَوْمِيَّةِ الصَّبَاح (دج)</label>
+          <input type="number" id="setMorningPrice" inputmode="decimal">
         </div>
         <div class="field">
-          <label>سِعْرُ الصُّنْدُوق (دج)</label>
-          <input type="number" id="setBoxPrice" inputmode="decimal">
+          <label>سِعْرُ يَوْمِيَّةِ المَسَاء (دج)</label>
+          <input type="number" id="setEveningPrice" inputmode="decimal">
         </div>
+      </div>
+      <div class="field">
+        <label>سِعْرُ الصُّنْدُوق (دج)</label>
+        <input type="number" id="setBoxPrice" inputmode="decimal">
       </div>
       <div class="field">
         <label>الحَدُّ الأَدْنَى المُسْتَهَدَف (دج) — اختِيَارِيّ</label>
@@ -860,7 +880,7 @@
   const SETTINGS_KEY = 'ajrati_settings_v1';
   const GUEST_FLAG_KEY = 'ajrati_guest_mode';
 
-  let settings = { dayPrice: 1200, boxPrice: 240, target: null };
+  let settings = { morningPrice: 600, eveningPrice: 600, boxPrice: 240, target: null };
   let entries = [];
   let workedState = 1;
   let dayPeriod = 'both';
@@ -876,13 +896,24 @@
     return db.collection('users').doc(currentUser.uid);
   }
 
+  // ترحيل الإعدادات القديمة (سعر يومية واحد) إلى صباح/مساء منفصلين، حتى لا تُفقد أسعار المستخدمين القدامى
+  function migrateSettings(s){
+    if(s.morningPrice === undefined || s.eveningPrice === undefined){
+      const legacy = (typeof s.dayPrice === 'number') ? s.dayPrice : 1200;
+      s.morningPrice = legacy / 2;
+      s.eveningPrice = legacy / 2;
+    }
+    delete s.dayPrice;
+    return s;
+  }
+
   // تحميل البيانات: من Firestore لو فيه مستخدم مسجّل دخول، أو من التخزين المحلي لو وضع ضيف
   function loadDataAndRender(){
     if(cloudMode){
       userDocRef().get().then((doc)=>{
         const data = doc.exists ? doc.data() : {};
         entries = Array.isArray(data.entries) ? data.entries : [];
-        settings = Object.assign({ dayPrice:1200, boxPrice:240, target:null }, data.settings || {});
+        settings = migrateSettings(Object.assign({ morningPrice:600, eveningPrice:600, boxPrice:240, target:null }, data.settings || {}));
         finishDataLoad();
       }).catch((e)=>{
         console.error('Firestore load failed', e);
@@ -896,7 +927,7 @@
       }catch(e){ entries = []; }
       try{
         const rawSettings = localStorage.getItem(SETTINGS_KEY);
-        if(rawSettings){ settings = Object.assign(settings, JSON.parse(rawSettings)); }
+        if(rawSettings){ settings = migrateSettings(Object.assign(settings, JSON.parse(rawSettings))); }
       }catch(e){ /* تجاهل */ }
       finishDataLoad();
     }
@@ -1058,6 +1089,35 @@
     auth.signOut().then(()=>{ showAuthScreen(); });
   });
 
+  document.getElementById('btnDeleteAccountLink').addEventListener('click', ()=>{
+    document.getElementById('deleteAccountError').style.display = 'none';
+    document.getElementById('deleteAccountModal').classList.add('open');
+  });
+  document.getElementById('btnCancelDeleteAccount').addEventListener('click', ()=>{
+    document.getElementById('deleteAccountModal').classList.remove('open');
+  });
+  document.getElementById('btnConfirmDeleteAccount').addEventListener('click', ()=>{
+    const errorEl = document.getElementById('deleteAccountError');
+    errorEl.style.display = 'none';
+    const userToDelete = currentUser;
+    if(!userToDelete) return;
+    // نحذف بيانات Firestore أولًا وإحنا لسه مسجّلين دخول (قواعد الأمان محتاجة ده)، ثم نحذف الحساب نفسه
+    userDocRef().delete().catch(()=>{ /* تجاهل لو المستند غير موجود أصلًا */ })
+      .then(()=> userToDelete.delete())
+      .then(()=>{
+        document.getElementById('deleteAccountModal').classList.remove('open');
+        localStorage.removeItem(GUEST_FLAG_KEY);
+      })
+      .catch((err)=>{
+        if(err.code === 'auth/requires-recent-login'){
+          errorEl.textContent = 'لِأَسْبَابٍ أَمْنِيَّة، يَجِبُ إِعَادَةُ تَسْجِيلِ الدُّخُولِ قَبْلَ حَذْفِ الحِسَاب. سَجِّلْ خُرُوجًا ثُمَّ ادْخُلْ مَرَّةً أُخْرَى، وَحَاوِلِ الحَذْفَ فَوْرًا بَعْدَ الدُّخُول.';
+        }else{
+          errorEl.textContent = 'حَدَثَ خَطَأٌ أَثْنَاءَ حَذْفِ الحِسَاب. حَاوِلْ مَرَّةً أُخْرَى.';
+        }
+        errorEl.style.display = 'block';
+      });
+  });
+
   auth.onAuthStateChanged((user)=>{
     if(user){
       cloudMode = true;
@@ -1075,10 +1135,12 @@
   });
 
   // كل نوع له حسابه المستقل تمامًا عن الآخر
-  // نص يوم (صباح فقط أو مساء فقط) = نص الأجرة، يوم كامل (صباحًا ومساءً) = الأجرة كاملة
+  // صباح فقط = سعر يومية الصباح، مساء فقط = سعر يومية المساء، صباحًا ومساءً (double journée) = مجموع الاثنين
   function computeDayWage(worked, period){
     if(!worked) return 0;
-    return period === 'both' ? settings.dayPrice : settings.dayPrice / 2;
+    if(period === 'morning') return settings.morningPrice;
+    if(period === 'evening') return settings.eveningPrice;
+    return settings.morningPrice + settings.eveningPrice;
   }
   function computeBoxWage(boxes){
     return boxes * settings.boxPrice; // الفترة (صباح/مساء) للتسجيل فقط، لا تؤثر على الحساب
@@ -1132,7 +1194,8 @@
   }
 
   function renderSettingsForm(){
-    document.getElementById('setDayPrice').value = settings.dayPrice;
+    document.getElementById('setMorningPrice').value = settings.morningPrice;
+    document.getElementById('setEveningPrice').value = settings.eveningPrice;
     document.getElementById('setBoxPrice').value = settings.boxPrice;
     document.getElementById('setTarget').value = settings.target ?? '';
   }
@@ -1394,10 +1457,12 @@
   });
 
   document.getElementById('saveSettings').addEventListener('click', ()=>{
-    const dp = parseFloat(document.getElementById('setDayPrice').value);
+    const mp = parseFloat(document.getElementById('setMorningPrice').value);
+    const ep = parseFloat(document.getElementById('setEveningPrice').value);
     const bp = parseFloat(document.getElementById('setBoxPrice').value);
     const tg = document.getElementById('setTarget').value;
-    settings.dayPrice = isNaN(dp) ? settings.dayPrice : dp;
+    settings.morningPrice = isNaN(mp) ? settings.morningPrice : mp;
+    settings.eveningPrice = isNaN(ep) ? settings.eveningPrice : ep;
     settings.boxPrice = isNaN(bp) ? settings.boxPrice : bp;
     settings.target = tg ? parseFloat(tg) : null;
     saveSettings();
