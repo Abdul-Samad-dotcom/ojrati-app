@@ -195,7 +195,7 @@
     grid-template-columns:1fr 1fr 1.3fr;
     gap:8px;
   }
-  .date-group input{
+  .date-group input, .date-group select{
     text-align:center;
     font-variant-numeric:tabular-nums;
   }
@@ -503,6 +503,21 @@
     cursor:pointer;
     text-decoration:none;
   }
+  .show-pass-toggle{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:12.5px;
+    color:var(--soil-600);
+    margin:-6px 0 14px;
+    cursor:pointer;
+  }
+  .show-pass-toggle input{
+    width:16px;
+    height:16px;
+    accent-color:var(--olive-700);
+    margin:0;
+  }
 
   /* ===== نافذة تحذير وضع الضيف ===== */
   .modal-overlay{
@@ -598,6 +613,10 @@
       <label>تَأْكِيدُ كَلِمَةِ المُرُور</label>
       <input type="password" id="authPasswordConfirm" placeholder="••••••••">
     </div>
+    <label class="show-pass-toggle">
+      <input type="checkbox" id="showPasswordToggle">
+      <span>إِظْهَارُ كَلِمَةِ المُرُور</span>
+    </label>
 
     <button class="btn-primary" id="btnAuthSubmit">تَسْجِيلُ الدُّخُول</button>
 
@@ -702,7 +721,21 @@
           <span>اليَوْم</span>
         </div>
         <div class="dg-field">
-          <input type="number" id="dayDate-m" inputmode="numeric" min="1" max="12" placeholder="شهر">
+          <select id="dayDate-m">
+            <option value="">شهر</option>
+            <option value="1">جَانْفِي</option>
+            <option value="2">فِيفْرِي</option>
+            <option value="3">مَارْس</option>
+            <option value="4">أَفْرِيل</option>
+            <option value="5">مَايْ</option>
+            <option value="6">جُوَان</option>
+            <option value="7">جُويلِيَة</option>
+            <option value="8">أُوت</option>
+            <option value="9">سِبْتَمْبَر</option>
+            <option value="10">أُكْتُوبَر</option>
+            <option value="11">نُوفَمْبَر</option>
+            <option value="12">دِيسَمْبَر</option>
+          </select>
           <span>الشَّهْر</span>
         </div>
         <div class="dg-field">
@@ -744,7 +777,21 @@
           <span>اليَوْم</span>
         </div>
         <div class="dg-field">
-          <input type="number" id="boxDate-m" inputmode="numeric" min="1" max="12" placeholder="شهر">
+          <select id="boxDate-m">
+            <option value="">شهر</option>
+            <option value="1">جَانْفِي</option>
+            <option value="2">فِيفْرِي</option>
+            <option value="3">مَارْس</option>
+            <option value="4">أَفْرِيل</option>
+            <option value="5">مَايْ</option>
+            <option value="6">جُوَان</option>
+            <option value="7">جُويلِيَة</option>
+            <option value="8">أُوت</option>
+            <option value="9">سِبْتَمْبَر</option>
+            <option value="10">أُكْتُوبَر</option>
+            <option value="11">نُوفَمْبَر</option>
+            <option value="12">دِيسَمْبَر</option>
+          </select>
           <span>الشَّهْر</span>
         </div>
         <div class="dg-field">
@@ -943,6 +990,12 @@
   });
   document.getElementById('btnEmailFromModal').addEventListener('click', ()=>{
     document.getElementById('guestWarningModal').classList.remove('open');
+  });
+
+  document.getElementById('showPasswordToggle').addEventListener('change', function(){
+    const type = this.checked ? 'text' : 'password';
+    document.getElementById('authPassword').type = type;
+    document.getElementById('authPasswordConfirm').type = type;
   });
 
   document.getElementById('linkToggleMode').addEventListener('click', ()=>{
@@ -1357,10 +1410,8 @@
   // init (تحميل البيانات نفسه بيحصل تلقائيًا بعد ما نعرف حالة تسجيل الدخول، فوق)
   const CURRENT_YEAR = new Date().getFullYear();
   wireDateField('dayDate-d', 2, 1, 31);
-  wireDateField('dayDate-m', 2, 1, 12);
   wireDateField('dayDate-y', 4, 2000, CURRENT_YEAR);
   wireDateField('boxDate-d', 2, 1, 31);
-  wireDateField('boxDate-m', 2, 1, 12);
   wireDateField('boxDate-y', 4, 2000, CURRENT_YEAR);
   setDateGroupToday('dayDate');
   setDateGroupToday('boxDate');
