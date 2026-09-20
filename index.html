@@ -393,10 +393,248 @@
     margin-top:8px;
     line-height:1.7;
   }
+
+  /* ===== شاشة تسجيل الدخول ===== */
+  .auth-wrap{
+    max-width:420px;
+    margin:0 auto;
+    padding:40px 20px 60px;
+    min-height:100vh;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .auth-logo{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  .auth-logo h1{
+    font-size:26px;
+    font-weight:900;
+    margin:0 0 4px;
+    color:var(--soil-950);
+  }
+  .auth-logo .sub{
+    font-size:12.5px;
+    color:var(--soil-600);
+  }
+  .auth-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:22px 18px;
+  }
+  .btn-google{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:12px;
+    border-radius:4px;
+    border:1.5px solid #dadce0;
+    background:#fff;
+    font-family:'Tajawal', sans-serif;
+    font-size:14.5px;
+    font-weight:700;
+    color:#3c4043;
+    cursor:pointer;
+  }
+  .btn-google svg{ flex:none; width:18px; height:18px; }
+  .auth-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:18px 0;
+    color:var(--soil-600);
+    font-size:12px;
+  }
+  .auth-divider::before, .auth-divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+  .auth-error{
+    background:var(--brick-100);
+    color:var(--brick-600);
+    font-size:12.5px;
+    font-weight:700;
+    padding:9px 11px;
+    border-radius:3px;
+    margin-bottom:12px;
+    display:none;
+  }
+  .auth-links{
+    display:flex;
+    justify-content:space-between;
+    margin-top:10px;
+    font-size:12.5px;
+  }
+  .auth-links a{
+    color:var(--olive-700);
+    font-weight:700;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .auth-guest-btn{
+    width:100%;
+    margin-top:16px;
+    padding:11px;
+    border-radius:4px;
+    border:1.5px dashed var(--line);
+    background:transparent;
+    color:var(--soil-600);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .auth-toggle-mode{
+    text-align:center;
+    margin-top:16px;
+    font-size:12.5px;
+    color:var(--soil-600);
+  }
+  .auth-toggle-mode a{
+    color:var(--olive-700);
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+  }
+
+  /* ===== نافذة تحذير وضع الضيف ===== */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(36,27,18,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:#fff;
+    border-radius:6px;
+    max-width:420px;
+    width:100%;
+    padding:22px 20px;
+    max-height:85vh;
+    overflow-y:auto;
+  }
+  .modal-box .warn-title{
+    font-size:15px;
+    font-weight:900;
+    color:var(--brick-600);
+    text-align:center;
+    margin-bottom:14px;
+    line-height:1.6;
+  }
+  .modal-box .warn-body{
+    font-size:13.5px;
+    color:var(--soil-950);
+    line-height:1.9;
+    margin-bottom:16px;
+  }
+  .modal-box .warn-sub{
+    font-size:12px;
+    color:var(--soil-600);
+    text-align:center;
+    margin:14px 0 8px;
+  }
+
+  /* ===== شريط المستخدم أعلى التطبيق ===== */
+  .user-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--sage-100);
+    border-radius:4px;
+    padding:8px 12px;
+    margin-bottom:14px;
+    font-size:12px;
+    color:var(--soil-600);
+  }
+  .user-bar b{ color:var(--soil-950); }
+  .user-bar button{
+    background:none;
+    border:none;
+    color:var(--brick-600);
+    font-weight:700;
+    font-size:12px;
+    cursor:pointer;
+    padding:4px 8px;
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="authScreen" class="auth-wrap">
+  <div class="auth-logo">
+    <h1>أَجْرَتِي</h1>
+    <div class="sub">سِجِلُّ أَيَّامِ العَمَلِ وَالأَجْرَةِ</div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-error" id="authError"></div>
+
+    <button class="btn-google" id="btnGoogleLogin">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.5 0-13.9 4.3-17.1 10.6z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.3C29.3 35.4 26.8 36 24 36c-5.2 0-9.6-3.1-11.3-7.5l-6.5 5C9.9 39.6 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.2 5.3C39.9 36.6 44 31 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      <span>الدُّخُولُ بِحِسَابِ Google</span>
+    </button>
+
+    <div class="auth-divider">أَوْ</div>
+
+    <div class="field">
+      <label>البَرِيدُ الإِلِكْتْرُونِيّ</label>
+      <input type="email" id="authEmail" inputmode="email" placeholder="example@email.com">
+    </div>
+    <div class="field">
+      <label>كَلِمَةُ المُرُور</label>
+      <input type="password" id="authPassword" placeholder="••••••••">
+    </div>
+    <div class="field" id="authConfirmField" style="display:none;">
+      <label>تَأْكِيدُ كَلِمَةِ المُرُور</label>
+      <input type="password" id="authPasswordConfirm" placeholder="••••••••">
+    </div>
+
+    <button class="btn-primary" id="btnAuthSubmit">تَسْجِيلُ الدُّخُول</button>
+
+    <div class="auth-links">
+      <a id="linkForgotPassword">نَسِيتَ كَلِمَةَ المُرُور؟</a>
+      <a id="linkToggleMode">إِنْشَاءُ حِسَابٍ جَدِيد</a>
+    </div>
+
+    <button class="auth-guest-btn" id="btnContinueGuest">المُتَابَعَةُ كَضَيْف</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="guestWarningModal">
+  <div class="modal-box">
+    <div class="warn-title">⚠️🛑 تَنْبِيهٌ هَامٌّ لِوِضْعِ الضَّيْفِ 🛑⚠️</div>
+    <div class="warn-body">
+      بَيَانَاتُكَ مَحْفُوظَةٌ فَقَطْ عَلَى هَذَا الجِهَازِ وَفِي هَذَا المُتَصَفِّحِ.<br><br>
+      إِفْرَاغُ البَيَانَاتِ، حَذْفُ التَّطْبِيقِ، أَوْ إِعَادَةُ ضَبْطِ الهَاتِفِ سَتُؤَدِّي إِلَى فَقْدَانِهَا نِهَائِيًّا.<br><br>
+      نَنْصَحُكَ بِإِنْشَاءِ حِسَابٍ لِحِمَايَةِ بَيَانَاتِكَ.
+    </div>
+    <button class="btn-google" id="btnGoogleFromModal">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.5 0-13.9 4.3-17.1 10.6z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.3C29.3 35.4 26.8 36 24 36c-5.2 0-9.6-3.1-11.3-7.5l-6.5 5C9.9 39.6 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.2 5.3C39.9 36.6 44 31 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      <span>الدُّخُولُ بِحِسَابِ Google</span>
+    </button>
+    <div class="warn-sub">أَوْ</div>
+    <button class="btn-primary" id="btnEmailFromModal" style="background:var(--olive-700);">تَسْجِيلُ الدُّخُولِ بِالإِيمَايل</button>
+    <button class="auth-guest-btn" id="btnConfirmGuest" style="margin-top:14px;">المُتَابَعَةُ كَضَيْفٍ عَلَى أَيِّ حَال</button>
+    <button class="auth-guest-btn" id="btnCancelGuest" style="border-style:solid;">إِلْغَاء</button>
+  </div>
+</div>
+
+<div id="appMain" class="wrap" style="display:none;">
+  <div class="user-bar" id="userBar" style="display:none;">
+    <span>مُسَجَّلٌ بِاسْم: <b id="userBarEmail"></b></span>
+    <button id="btnLogout">تَسْجِيلُ خُرُوج</button>
+  </div>
+
 
   <header class="top">
     <div>
@@ -546,17 +784,34 @@
     <div id="entriesList"></div>
   </div>
 
-  <footer class="note">
+  <footer class="note" id="footerNote">
     البَيَانَاتُ مَحْفُوظَةٌ فِي هَذَا الجِهَازِ وَهَذَا المُتَصَفِّح فَقَط.<br>
     لِلْحِفَاظِ عَلَيْهَا، تَجَنَّبْ مَسْحَ بَيَانَاتِ المُتَصَفِّح لِهَذِهِ الصَّفْحَة.
   </footer>
 
 </div>
 
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHeO7J6Pfy3n40gnQBPKh-kMGoGOH650I",
+    authDomain: "ojrati-app.firebaseapp.com",
+    projectId: "ojrati-app",
+    storageBucket: "ojrati-app.firebasestorage.app",
+    messagingSenderId: "91843350242",
+    appId: "1:91843350242:web:b49f88510a0c1a182718bb"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+
 <script>
 (function(){
   const STORAGE_KEY = 'ajrati_entries_v1';
   const SETTINGS_KEY = 'ajrati_settings_v1';
+  const GUEST_FLAG_KEY = 'ajrati_guest_mode';
 
   let settings = { dayPrice: 1200, boxPrice: 240, target: null };
   let entries = [];
@@ -564,30 +819,207 @@
   let dayPeriod = 'both';
   let boxPeriod = 'both';
 
-  function loadSettings(){
-    try{
-      const raw = localStorage.getItem(SETTINGS_KEY);
-      if(raw){ settings = Object.assign(settings, JSON.parse(raw)); }
-    }catch(e){ console.error('settings load failed', e); }
+  // === وضع السحابة (مستخدم مسجّل دخول) أو وضع الضيف (محلي فقط) ===
+  let cloudMode = false;
+  let currentUser = null;
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  function userDocRef(){
+    return db.collection('users').doc(currentUser.uid);
   }
-  function saveSettings(){
-    try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-    catch(e){ console.error('settings save failed', e); }
+
+  // تحميل البيانات: من Firestore لو فيه مستخدم مسجّل دخول، أو من التخزين المحلي لو وضع ضيف
+  function loadDataAndRender(){
+    if(cloudMode){
+      userDocRef().get().then((doc)=>{
+        const data = doc.exists ? doc.data() : {};
+        entries = Array.isArray(data.entries) ? data.entries : [];
+        settings = Object.assign({ dayPrice:1200, boxPrice:240, target:null }, data.settings || {});
+        finishDataLoad();
+      }).catch((e)=>{
+        console.error('Firestore load failed', e);
+        entries = [];
+        finishDataLoad();
+      });
+    }else{
+      try{
+        const rawEntries = localStorage.getItem(STORAGE_KEY);
+        entries = rawEntries ? JSON.parse(rawEntries) : [];
+      }catch(e){ entries = []; }
+      try{
+        const rawSettings = localStorage.getItem(SETTINGS_KEY);
+        if(rawSettings){ settings = Object.assign(settings, JSON.parse(rawSettings)); }
+      }catch(e){ /* تجاهل */ }
+      finishDataLoad();
+    }
   }
-  function loadEntries(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      entries = raw ? JSON.parse(raw) : [];
-    }catch(e){ console.error('entries load failed', e); entries = []; }
+  function finishDataLoad(){
+    renderSettingsForm();
+    renderAll();
   }
   function saveEntries(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
-    catch(e){ console.error('entries save failed', e); }
+    if(cloudMode){
+      userDocRef().set({ entries: entries }, { merge:true }).catch((e)=> console.error('Firestore save failed', e));
+    }else{
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
+      catch(e){ console.error('entries save failed', e); }
+    }
+  }
+  function saveSettings(){
+    if(cloudMode){
+      userDocRef().set({ settings: settings }, { merge:true }).catch((e)=> console.error('Firestore save failed', e));
+    }else{
+      try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+      catch(e){ console.error('settings save failed', e); }
+    }
   }
 
   function fmt(n){
     return new Intl.NumberFormat('en-US').format(Math.round(n*100)/100);
   }
+
+  // ============ المصادقة (تسجيل الدخول) ============
+  let authMode = 'login'; // 'login' أو 'signup'
+
+  function showAuthScreen(){
+    document.getElementById('authScreen').style.display = '';
+    document.getElementById('appMain').style.display = 'none';
+  }
+  function showApp(){
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appMain').style.display = '';
+    const userBar = document.getElementById('userBar');
+    const footerNote = document.getElementById('footerNote');
+    if(cloudMode && currentUser){
+      userBar.style.display = 'flex';
+      document.getElementById('userBarEmail').textContent = currentUser.email || 'مستخدم Google';
+      footerNote.innerHTML = 'بَيَانَاتُكَ مَحْفُوظَةٌ عَلَى حِسَابِكَ، وَيُمْكِنُكَ الوُصُولُ إِلَيْهَا مِنْ أَيِّ جِهَاز.';
+    }else{
+      userBar.style.display = 'none';
+      footerNote.innerHTML = 'البَيَانَاتُ مَحْفُوظَةٌ فِي هَذَا الجِهَازِ وَهَذَا المُتَصَفِّح فَقَط.<br>لِلْحِفَاظِ عَلَيْهَا، تَجَنَّبْ مَسْحَ بَيَانَاتِ المُتَصَفِّح لِهَذِهِ الصَّفْحَة.';
+    }
+  }
+  function showAuthError(msg){
+    const el = document.getElementById('authError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function clearAuthError(){
+    const el = document.getElementById('authError');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+  function authErrorMessage(code){
+    const map = {
+      'auth/invalid-email': 'صِيغَةُ البَرِيدِ الإِلِكْتْرُونِيِّ غَيْرُ صَحِيحَة.',
+      'auth/user-not-found': 'لَا يُوجَدُ حِسَابٌ بِهَذَا البَرِيدِ الإِلِكْتْرُونِيّ.',
+      'auth/wrong-password': 'كَلِمَةُ المُرُورِ غَيْرُ صَحِيحَة.',
+      'auth/invalid-credential': 'البَرِيدُ الإِلِكْتْرُونِيّ أَوْ كَلِمَةُ المُرُورِ غَيْرُ صَحِيحَة.',
+      'auth/email-already-in-use': 'هَذَا البَرِيدُ الإِلِكْتْرُونِيّ مُسْتَخْدَمٌ بِالفِعْلِ فِي حِسَابٍ آخَر.',
+      'auth/weak-password': 'كَلِمَةُ المُرُورِ ضَعِيفَة، يَجِبُ أَنْ تَكُونَ 6 أَحْرُفٍ عَلَى الأَقَلّ.',
+      'auth/popup-closed-by-user': 'تَمَّ إِغْلَاقُ نَافِذَةِ تَسْجِيلِ الدُّخُولِ قَبْلَ الِانْتِهَاء.',
+      'auth/network-request-failed': 'تَحَقَّقْ مِنِ اتِّصَالِكَ بِالإِنْتَرْنِت.'
+    };
+    return map[code] || 'حَدَثَ خَطَأٌ غَيْرُ مُتَوَقَّع. حَاوِلْ مَرَّةً أُخْرَى.';
+  }
+
+  function doGoogleLogin(){
+    clearAuthError();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch((err)=>{
+      if(err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request' || err.code === 'auth/operation-not-supported-in-this-environment'){
+        auth.signInWithRedirect(provider);
+      }else if(err.code !== 'auth/popup-closed-by-user'){
+        showAuthError(authErrorMessage(err.code));
+      }
+    });
+  }
+
+  document.getElementById('btnGoogleLogin').addEventListener('click', doGoogleLogin);
+  document.getElementById('btnGoogleFromModal').addEventListener('click', ()=>{
+    document.getElementById('guestWarningModal').classList.remove('open');
+    doGoogleLogin();
+  });
+  document.getElementById('btnEmailFromModal').addEventListener('click', ()=>{
+    document.getElementById('guestWarningModal').classList.remove('open');
+  });
+
+  document.getElementById('linkToggleMode').addEventListener('click', ()=>{
+    clearAuthError();
+    authMode = authMode === 'login' ? 'signup' : 'login';
+    document.getElementById('authConfirmField').style.display = authMode === 'signup' ? '' : 'none';
+    document.getElementById('btnAuthSubmit').textContent = authMode === 'signup' ? 'إِنْشَاءُ الحِسَاب' : 'تَسْجِيلُ الدُّخُول';
+    document.getElementById('linkToggleMode').textContent = authMode === 'signup' ? 'لَدَيَّ حِسَابٌ بِالفِعْل' : 'إِنْشَاءُ حِسَابٍ جَدِيد';
+  });
+
+  document.getElementById('linkForgotPassword').addEventListener('click', ()=>{
+    clearAuthError();
+    const email = document.getElementById('authEmail').value.trim();
+    if(!email){
+      showAuthError('اكْتُبْ بَرِيدَكَ الإِلِكْتْرُونِيَّ فِي الخَانَةِ أَوَّلًا، ثُمَّ اضْغَطْ "نَسِيتَ كَلِمَةَ المُرُور؟".');
+      return;
+    }
+    auth.sendPasswordResetEmail(email).then(()=>{
+      showAuthError('تَمَّ إِرْسَالُ رَابِطِ إِعَادَةِ تَعْيِينِ كَلِمَةِ المُرُورِ إِلَى بَرِيدِكَ.');
+    }).catch((err)=> showAuthError(authErrorMessage(err.code)));
+  });
+
+  document.getElementById('btnAuthSubmit').addEventListener('click', ()=>{
+    clearAuthError();
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    if(!email || !password){
+      showAuthError('اِمْلَأِ البَرِيدَ الإِلِكْتْرُونِيَّ وَكَلِمَةَ المُرُور.');
+      return;
+    }
+    if(authMode === 'signup'){
+      const confirm = document.getElementById('authPasswordConfirm').value;
+      if(password !== confirm){
+        showAuthError('كَلِمَتَا المُرُورِ غَيْرُ مُتَطَابِقَتَيْن.');
+        return;
+      }
+      auth.createUserWithEmailAndPassword(email, password).catch((err)=> showAuthError(authErrorMessage(err.code)));
+    }else{
+      auth.signInWithEmailAndPassword(email, password).catch((err)=> showAuthError(authErrorMessage(err.code)));
+    }
+  });
+
+  document.getElementById('btnContinueGuest').addEventListener('click', ()=>{
+    document.getElementById('guestWarningModal').classList.add('open');
+  });
+  document.getElementById('btnCancelGuest').addEventListener('click', ()=>{
+    document.getElementById('guestWarningModal').classList.remove('open');
+  });
+  document.getElementById('btnConfirmGuest').addEventListener('click', ()=>{
+    document.getElementById('guestWarningModal').classList.remove('open');
+    localStorage.setItem(GUEST_FLAG_KEY, '1');
+    cloudMode = false;
+    currentUser = null;
+    showApp();
+    loadDataAndRender();
+  });
+
+  document.getElementById('btnLogout').addEventListener('click', ()=>{
+    localStorage.removeItem(GUEST_FLAG_KEY);
+    auth.signOut().then(()=>{ showAuthScreen(); });
+  });
+
+  auth.onAuthStateChanged((user)=>{
+    if(user){
+      cloudMode = true;
+      currentUser = user;
+      showApp();
+      loadDataAndRender();
+    }else if(localStorage.getItem(GUEST_FLAG_KEY) === '1'){
+      cloudMode = false;
+      currentUser = null;
+      showApp();
+      loadDataAndRender();
+    }else{
+      showAuthScreen();
+    }
+  });
 
   // كل نوع له حسابه المستقل تمامًا عن الآخر
   // نص يوم (صباح فقط أو مساء فقط) = نص الأجرة، يوم كامل (صباحًا ومساءً) = الأجرة كاملة
@@ -922,10 +1354,7 @@
     document.getElementById('settingsBox').removeAttribute('open');
   });
 
-  // init
-  loadSettings();
-  loadEntries();
-  renderSettingsForm();
+  // init (تحميل البيانات نفسه بيحصل تلقائيًا بعد ما نعرف حالة تسجيل الدخول، فوق)
   const CURRENT_YEAR = new Date().getFullYear();
   wireDateField('dayDate-d', 2, 1, 31);
   wireDateField('dayDate-m', 2, 1, 12);
@@ -937,7 +1366,6 @@
   setDateGroupToday('boxDate');
   updateLiveCalcDay();
   updateLiveCalcBox();
-  renderAll();
 })();
 
 // تسجيل Service Worker لتشغيل التطبيق دون اتصال بالإنترنت
